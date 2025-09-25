@@ -1,0 +1,8 @@
+streamlit
+google-generativeai
+google-api-core
+openai
+anthropic
+matplotlib
+numpy
+opencv-python-headless
