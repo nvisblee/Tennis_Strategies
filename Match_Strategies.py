@@ -288,7 +288,7 @@ BTW: Make this description clear and concise so that another AI computer vision 
                 "max_completion_tokens": 2000,
             }
             results = client.chat.completions.create(**params)
-            return results.choices[0].message["content"]
+            return results.choices[0].message.content
         with st.spinner("Identifying key shot (OpenAI)..."):
             key_shot_text_full = key_shot_identifyer(base64Frames, coach_text, fps)
             st.subheader("Key Shot")
