@@ -285,8 +285,7 @@ BTW: Make this description clear and concise so that another AI computer vision 
             params = {
                 "model": "gpt-5",
                 "messages": key_shot_prompt,
-                "max_tokens": 2000,
-                "temperature": 0.3,
+                "max_completion_tokens": 2000,
             }
             results = client.chat.completions.create(**params)
             return results.choices[0].message.content
