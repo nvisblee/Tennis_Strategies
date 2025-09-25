@@ -283,9 +283,10 @@ BTW: Make this description clear and concise so that another AI computer vision 
                 },
             ]
             params = {
-                "model": "gpt-5",
+                "model": "gpt-4.1-2025-04-14",
                 "messages": key_shot_prompt,
-                "max_completion_tokens": 2000,
+                "max_tokens": 2000,
+                "temperature": 0.3,
             }
             results = client.chat.completions.create(**params)
             return results.choices[0].message.content
@@ -293,28 +294,20 @@ BTW: Make this description clear and concise so that another AI computer vision 
             key_shot_text_full = key_shot_identifyer(base64Frames, coach_text, fps)
             st.subheader("Key Shot")
             st.markdown(key_shot_text_full)
-            
-            # Debug raw output
-            st.text("Raw Key Shot Response:")
-            st.code(key_shot_text_full, language="markdown")
-            
+
             key_shot_timestamp_str = None
             key_shot_text_for_gemini = key_shot_text_full
-            
             try:
-                # More flexible regex
-                timestamp_match = re.search(r"(\d+(?:\.\d+)?)\s*(s|sec|seconds)?", key_shot_text_full.lower())
-                if timestamp_match:
-                    key_shot_timestamp_str = timestamp_match.group(1) + "s"
-                    # remove the line regardless of casing
-                    key_shot_text_for_gemini = re.sub(r"key shot timestamp.*", "", key_shot_text_full, flags=re.I)
+                lines = key_shot_text_full.strip().split('\n')
+                timestamp_line = [line for line in lines if "Key Shot Timestamp:" in line]
+                if timestamp_line:
+                    key_shot_timestamp_str = timestamp_line[0].replace("Key Shot Timestamp:", "").strip()
+                    key_shot_text_for_gemini = "\n".join([line for line in lines if "Key Shot Timestamp:" not in line])
                     st.info(f"Key shot identified around: {key_shot_timestamp_str}")
                 else:
                     st.warning("Could not find timestamp for the key shot in the response.")
             except Exception as e:
                 st.warning(f"Error parsing key shot response: {e}")
-
-
 
 
         # --- 4. Extract Positions and Visualize if Key Shot Found ---
