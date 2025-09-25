@@ -461,18 +461,17 @@ elif uploaded_file is None:
     st.info("Please upload a tennis point video to start the analysis.")
     st.markdown("""
     ## How This Works
-    1. **Upload a Tennis Point Video**: The app accepts MP4 videos showing a single tennis point.
+    1. **Upload a Tennis Point Video**
     2. **AI Analysis**: The system will analyze:
        - Your overall game strategy and patterns
        - Court positioning and movement
-       - Critical decision-making moments
+       - Shot selection
     3. **Results**: You'll receive:
        - A personalized coaching analysis
        - Identification of a key shot that influenced the point (if any)
+       - Drills that can improve your shot selection
        - Visual representation of player positions and shot trajectories
-       - Strategic recommendation with explanation
-    **Smart Camera Detection** - Automatically detects camera angle and adapts analysis accordingly!
-    This tool is designed to help players understand the strategic elements of their game and make better tactical decisions on court.
+    
     """)
 
 else:
