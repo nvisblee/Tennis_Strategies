@@ -196,7 +196,7 @@ STRICT RULES:
 
 ---
 
-⚠️ IMPORTANT:  
+IMPORTANT:  
 Your response must read like a **real coach giving personalized feedback** — clear, specific, actionable. 
 No generic advice like “hit deeper” or “move your feet” unless it’s tied to a clear observed pattern.
 """
