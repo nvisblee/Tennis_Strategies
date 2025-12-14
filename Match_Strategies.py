@@ -202,7 +202,7 @@ No generic advice like “hit deeper” or “move your feet” unless it’s ti
 """
 
             try:
-                model_coach = genai_client.GenerativeModel('gemini-2.5-pro') 
+                model_coach = genai_client.GenerativeModel('gemini-3-pro-preview') 
                 response_coach = model_coach.generate_content(
                     contents=[
                         {"parts": [
@@ -384,7 +384,7 @@ This is the template of the court so visualize this before you find the JSOn coo
     return fig_plot, ax_plot"
 
 """
-                model_json = genai_client.GenerativeModel('gemini-2.5-pro')
+                model_json = genai_client.GenerativeModel('gemini-3-pro-preview')
                 json_response = model_json.generate_content(
                     contents=[
                         {"parts": [
