@@ -54,7 +54,7 @@ def validate_coordinates(coords, coord_type="position"):
         if not (0 <= x <= court_width and 0 <= y <= court_length):
             st.info(f"ℹ️ {coord_type} at [{x:.1f}, {y:.1f}] is outside the court boundaries.")
     if x < x_min_viz or x > x_max_viz or y < y_min_viz or y > y_max_viz:
-        st.warning(f" {coord_type} coordinates [{x:.1f}, {y:.1f}] are far outside the court. The visualization may be skewed, but proceeding.")
+        st.warning(f"⚠️ {coord_type} coordinates [{x:.1f}, {y:.1f}] are far outside the court. The visualization may be skewed, but proceeding.")
     return [x, y]
 
 def validate_and_fix_player_positions(player1_pos, player2_pos):
@@ -64,7 +64,7 @@ def validate_and_fix_player_positions(player1_pos, player2_pos):
         st.error("❌ Both players detected at identical positions. This likely indicates an extraction failure.")
         return None, None
     if player1_pos[1] > player2_pos[1] and player1_pos[1] > 45 and player2_pos[1] < 30:
-        st.warning(" Player positions appear swapped based on y-coordinates. Correcting...")
+        st.warning("⚠️ Player positions appear swapped based on y-coordinates. Correcting...")
         return player2_pos, player1_pos
     return player1_pos, player2_pos
 
@@ -213,21 +213,24 @@ No generic advice like “hit deeper” or “move your feet” unless it’s ti
                     generation_config={"temperature": 0.2}
                 )
                 if not response_coach.parts or response_coach.candidates[0].finish_reason != 1:
-                    st.error(" The AI analysis was blocked. Try another video segment.")
+                    st.error("⚠️ The AI analysis was blocked. Try another video segment.")
                     st.stop()
                 coach_text = response_coach.text
             except Exception as e:
-                st.error(f" Error generating coaching analysis: {str(e)}")
+                st.error(f"⚠️ Error generating coaching analysis: {str(e)}")
                 st.stop()
         st.subheader("Coach's Analysis")
         st.markdown(coach_text)
 
-        # --- 3. Identify Key Shot with Gemini (Replaced OpenAI) ---
+        # --- 3. Identify Key Shot with OpenAI (Original Code) ---
         base64Frames, fps = process_video(video_file_path)
-        
         def key_shot_identifyer(base64Frames, coach_text, fps):
             frame_sampling_rate = 40
-            prompt_text = f"""
+            key_shot_prompt = [
+                {
+                    "role": "user",
+                    "content": [
+                         f"""
 You are a tennis coach using computer vision to analyze a single tennis point. You are given a sequence of frames from a video, sampled every {frame_sampling_rate} frames. Each frame is approximately {frame_sampling_rate/fps:.2f} seconds apart.
 
 Your task is to identify and clearly describe the single most pivotal groundstroke (not a serve) in this point. This must be a shot hit by the player closest to the camera only. Do not include or describe any shots from the opponent on the far side of the court.
@@ -273,34 +276,22 @@ Impact: [why this shot was pivotal and what it reveals about the player's strate
 Key Shot Timestamp: [Provide the approximate time in seconds from the start of the video when the key shot is executed. For example: "5.4s"]
 
 BTW: Make this description clear and concise so that another AI computer vision model can easily spot this exact moment.
-"""
-            
-            # Prepare content for Gemini (Text + Images)
-            content_parts = [prompt_text]
-            
-            # We need to decode the base64 strings back to bytes for Gemini
-            sampled_frames = base64Frames[0::frame_sampling_rate]
-            
-            for b64_frame in sampled_frames:
-                image_data = base64.b64decode(b64_frame)
-                content_parts.append({
-                    "mime_type": "image/jpeg",
-                    "data": image_data
-                })
 
-            try:
-                # Use Gemini 1.5 Pro as it handles image sequences/video frames robustly
-                model_key_shot = genai_client.GenerativeModel('gemini-1.5-pro')
-                response = model_key_shot.generate_content(
-                    contents=content_parts,
-                    generation_config={"temperature": 0.3}
-                )
-                return response.text
-            except Exception as e:
-                st.error(f"Error identifying key shot with Gemini: {e}")
-                return ""
 
-        with st.spinner("Identifying key shot (Gemini)..."):
+""",
+                        *map(lambda x: {"image": x, "resize": 768}, base64Frames[0::40]),
+                    ],
+                },
+            ]
+            params = {
+                "model": "gpt-4.1-2025-04-14",
+                "messages": key_shot_prompt,
+                "max_tokens": 2000,
+                "temperature": 0.3,
+            }
+            results = client.chat.completions.create(**params)
+            return results.choices[0].message.content
+        with st.spinner("Identifying key shot (OpenAI)..."):
             key_shot_text_full = key_shot_identifyer(base64Frames, coach_text, fps)
             st.subheader("Key Shot")
             st.markdown(key_shot_text_full)
@@ -419,7 +410,7 @@ This is the template of the court so visualize this before you find the JSOn coo
                     if not all([player1_pos, player2_pos, actual_shot_start, actual_shot_end, suggested_shot_end]):
                         st.error("❌ Failed to extract all necessary data points for visualization. The model may have returned incomplete data. Please try a different video.")
                         st.stop()
-                    st.success("Successfully extracted all visualization data.")
+                    st.success("✅ Successfully extracted all visualization data.")
                     
                 except (json.JSONDecodeError, KeyError, TypeError) as e:
                     st.error(f"❌ Failed to parse visualization data from the AI. Error: {e}")
